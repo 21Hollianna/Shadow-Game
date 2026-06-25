@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>☀️ Kindergarten Shadow Simulator 🌳</title>
+  
+  <!-- Tailwind CSS for modern responsive styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Playful Kid-Friendly Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .playful-title {
+      font-family: 'Fredoka', cursive;
+    }
+    /* Floating Cloud Animations */
+    @keyframes floatCloud {
+      0% { transform: translateX(-150px); }
+      100% { transform: translateX(110vw); }
+    }
+    .cloud-slow {
+      animation: floatCloud 50s linear infinite;
+    }
+    .cloud-fast {
+      animation: floatCloud 30s linear infinite;
+    }
+    /* Bounce animation for matching stars */
+    @keyframes starBounce {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.3) rotate(15deg); }
+    }
+    .animate-star {
+      animation: starBounce 0.8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="p-0 m-0 w-screen h-screen flex flex-col justify-between bg-sky-200 transition-colors duration-1000">
+
+  <!-- Floating background clouds -->
+  <div class="absolute top-16 left-0 cloud-fast text-6xl opacity-30 pointer-events-none z-0">☁️</div>
+  <div class="absolute top-36 left-0 cloud-slow text-8xl opacity-20 pointer-events-none z-0">☁️</div>
+  <div class="absolute top-48 left-0 cloud-fast text-7xl opacity-25 pointer-events-none z-0" style="animation-delay: -15s;">☁️</div>
+
+  <!-- Main Game Container -->
+  <main class="relative w-full max-w-4xl mx-auto flex-grow flex flex-col justify-between p-4 z-10">
+    
+    <!-- Top HUD and Challenge Banner -->
+    <header class="w-full flex flex-col gap-3">
+      <!-- Top Title and Score Bar -->
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md border-4 border-amber-400 rounded-3xl p-3 shadow-md">
+        <h1 class="text-2xl sm:text-3xl font-black text-amber-600 playful-title tracking-wide flex items-center gap-2">
+          ☀️ SHADOW PLAY! 🕶️
+        </h1>
+        <!-- Star score display -->
+        <div class="bg-amber-400 border-2 border-slate-800 rounded-2xl px-4 py-1.5 shadow flex items-center gap-2 transform rotate-2">
+          <span class="text-2xl animate-bounce">⭐</span>
+          <span class="text-xl font-black text-slate-900 playful-title" id="score-val">0</span>
+        </div>
+      </div>
+
+      <!-- Interactive Challenge Panel -->
+      <div id="challenge-panel" class="bg-white border-4 border-slate-900 rounded-3xl p-4 shadow-[0_6px_0_#1e293b] relative flex flex-col sm:flex-row items-center gap-4 transition-all duration-300">
+        <!-- Cute Mascot Guide -->
+        <div class="text-5xl sm:text-6xl animate-bounce" style="animation-duration: 3s;" id="mascot">
+          🌻
+        </div>
+        <!-- Challenge prompt text -->
+        <div class="flex-grow text-center sm:text-left flex items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-amber-500 tracking-wider uppercase block" id="challenge-title">Sunny the Sunflower's Quest:</span>
+            <h2 class="text-lg sm:text-xl font-black text-slate-800" id="challenge-desc">
+              Can you move the sun to make a super LONG shadow?
+            </h2>
+          </div>
+          <!-- Clickable speaker button to replay speech -->
+          <button onclick="speakPrompt()" class="bg-amber-400 hover:bg-amber-300 border-4 border-slate-900 rounded-2xl p-3 shadow-[0_4px_0_#1e293b] active:translate-y-1 active:shadow-none transition-all text-2xl flex items-center justify-center shrink-0" title="Read Aloud">
+            🔊
+          </button>
+        </div>
+        <!-- Goal status badge -->
+        <div id="goal-status" class="bg-rose-100 text-rose-600 border-2 border-rose-400 font-extrabold px-4 py-2 rounded-2xl text-sm uppercase tracking-wider animate-pulse">
+          Not Yet! 🔍
+        </div>
+      </div>
+    </header>
+
+    <!-- Draggable Sky Arena -->
+    <section id="sky-arena" class="relative w-full h-56 sm:h-64 my-2 rounded-3xl border-4 border-dashed border-white/60 overflow-hidden cursor-crosshair">
+      
+      <!-- Time of Day Indicator -->
+      <div class="absolute top-4 left-4 bg-black/30 backdrop-blur-sm rounded-2xl px-3 py-1.5 text-white font-extrabold text-sm shadow tracking-wide" id="time-display">
+        🌅 Sunrise (Morning)
+      </div>
+
+      <!-- Draggable Sun Graphic -->
+      <div id="sun-element" class="absolute w-16 h-16 sm:w-20 sm:h-20 cursor-grab active:cursor-grabbing transform -translate-x-1/2 -translate-y-1/2 select-none" style="left: 20%; top: 40%;">
+        <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_15px_rgba(251,191,36,0.8)] animate-[spin_40s_linear_infinite]">
+          <!-- Sun Rays -->
+          <path d="M50 5 L50 15 M50 85 L50 95 M5 50 L15 50 M85 50 L95 50 M18 18 L25 25 M75 75 L82 82 M18 82 L25 75 M75 18 L82 25" stroke="#F59E0B" stroke-width="8" stroke-linecap="round" />
+          <!-- Sun Body -->
+          <circle cx="50" cy="50" r="28" fill="#FBBF24" stroke="#D97706" stroke-width="3" />
+          <!-- Cute Face -->
+          <circle cx="42" cy="46" r="3" fill="#1E293B" />
+          <circle cx="58" cy="46" r="3" fill="#1E293B" />
+          <path d="M40 58 Q50 68 60 58" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none" />
+        </svg>
+      </div>
+
+    </section>
+
+    <!-- The Ground Stage (Green hill where the object stands) -->
+    <section class="relative w-full h-44 sm:h-48 rounded-3xl overflow-hidden shadow-inner border-b-8 border-emerald-800">
+      
+      <!-- Grass Background layer -->
+      <div id="ground" class="absolute inset-0 bg-gradient-to-b from-emerald-400 to-emerald-600 transition-colors duration-1000"></div>
+
+      <!-- The Active Stage Center Point -->
+      <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-48 h-40 flex flex-col justify-end items-center relative">
+        
+        <!-- DYNAMIC SHADOW ELEMENT -->
+        <!-- Placed underneath the object; uses identical SVG but rendered black and scaled/skewed with CSS -->
+        <div id="shadow-wrapper" class="absolute bottom-1 w-28 h-28 transform origin-bottom center opacity-40 blur-[2px] transition-all duration-75 pointer-events-none select-none">
+          <!-- Shadow path matching selected object injected here by JS -->
+        </div>
+
+        <!-- ACTIVE FOREGROUND OBJECT -->
+        <div id="object-wrapper" class="absolute bottom-0 w-28 h-28 z-20 pointer-events-none select-none">
+          <!-- Colorful object SVG injected here by JS -->
+        </div>
+
+        <!-- Wooden Stand Base -->
+        <div class="w-24 h-4 bg-amber-800 border-2 border-amber-950 rounded-full z-10 shadow-md"></div>
+      </div>
+
+    </section>
+
+    <!-- Easy control Slider (Fallback for simpler touch targets) -->
+    <div class="bg-white/90 border-4 border-slate-900 rounded-2xl p-3 shadow-md my-2 flex flex-col sm:flex-row items-center gap-3">
+      <span class="text-sm font-black text-slate-700 uppercase tracking-wider whitespace-nowrap">👉 Move the Sun:</span>
+      <input type="range" id="sun-slider" min="5" max="95" value="20" class="w-full accent-amber-500 h-3 rounded-lg bg-slate-200 cursor-pointer">
+    </div>
+
+    <!-- Interactive Toy Selector Tray -->
+    <footer class="w-full">
+      <div class="bg-emerald-900 border-4 border-slate-900 rounded-3xl p-3 shadow-lg flex flex-col items-center gap-2">
+        <span class="text-xs font-bold text-emerald-200 tracking-widest uppercase">🎒 Choose a Toy to Test:</span>
+        
+        <!-- Inline layout of objects -->
+        <div class="grid grid-cols-5 gap-2 w-full max-w-lg">
+          <button onclick="selectObject('giraffe')" id="btn-giraffe" class="bg-white hover:bg-amber-100 border-4 border-amber-400 rounded-2xl p-2 transition transform active:scale-95 shadow-md flex items-center justify-center aspect-square">
+            <span class="text-3xl sm:text-4xl">🦒</span>
+          </button>
+          <button onclick="selectObject('dino')" id="btn-dino" class="bg-white hover:bg-emerald-100 border-4 border-emerald-400 rounded-2xl p-2 transition transform active:scale-95 shadow-md flex items-center justify-center aspect-square">
+            <span class="text-3xl sm:text-4xl">🦖</span>
+          </button>
+          <button onclick="selectObject('tree')" id="btn-tree" class="bg-white hover:bg-green-100 border-4 border-green-500 rounded-2xl p-2 transition transform active:scale-95 shadow-md flex items-center justify-center aspect-square">
+            <span class="text-3xl sm:text-4xl">🌳</span>
+          </button>
+          <button onclick="selectObject('castle')" id="btn-castle" class="bg-white hover:bg-orange-100 border-4 border-orange-500 rounded-2xl p-2 transition transform active:scale-95 shadow-md flex items-center justify-center aspect-square">
+            <span class="text-3xl sm:text-4xl">🏰</span>
+          </button>
+          <button onclick="selectObject('kid')" id="btn-kid" class="bg-white hover:bg-sky-100 border-4 border-sky-400 rounded-2xl p-2 transition transform active:scale-95 shadow-md flex items-center justify-center aspect-square">
+            <span class="text-3xl sm:text-4xl">🧑</span>
+          </button>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Start Screen Overlay -->
+  <div id="start-overlay" class="fixed inset-0 bg-amber-400 z-50 flex flex-col justify-center items-center p-6 text-center">
+    <div class="bg-white border-8 border-slate-900 rounded-[40px] p-8 max-w-md w-full shadow-2xl">
+      <div class="text-8xl animate-bounce">☀️</div>
+      <h1 class="text-4xl sm:text-5xl font-black text-slate-900 playful-title tracking-wide mt-4">
+        SHADOW<br><span class="text-amber-500 font-extrabold">EXPLORER!</span>
+      </h1>
+      <p class="text-lg font-bold text-slate-600 mt-2">
+        Place cozy toys in the sun and watch their shadows stretch, shrink, and spin!
+      </p>
+      <button onclick="startGame()" class="mt-8 w-full bg-emerald-500 hover:bg-emerald-400 text-white font-black text-3xl py-5 px-10 rounded-3xl shadow-[0_8px_0_#065f46] hover:shadow-[0_6px_0_#065f46] active:shadow-none active:translate-y-2 border-4 border-slate-900 transition-all playful-font">
+        LET'S PLAY! 🎮
+      </button>
+    </div>
+  </div>
+
+  <!-- Big Challenge Success Overlay -->
+  <div id="success-overlay" class="fixed inset-0 bg-emerald-500/90 backdrop-blur-md z-40 flex flex-col justify-center items-center p-6 text-center opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white border-8 border-slate-900 rounded-[40px] p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300" id="success-card">
+      <div class="text-8xl animate-star inline-block">⭐</div>
+      <h2 class="text-4xl sm:text-5xl font-black text-emerald-600 mt-4 playful-font">AWESOME!</h2>
+      <p class="text-xl font-bold text-slate-700 mt-2" id="success-quote">That is a perfect shadow!</p>
+      
+      <div class="flex justify-center gap-3 my-6 text-5xl">
+        <span>⭐</span><span>⭐</span><span>⭐</span>
+      </div>
+
+      <button onclick="nextChallenge()" class="w-full bg-amber-500 hover:bg-amber-400 text-white font-black text-2xl py-4 px-8 rounded-2xl shadow-[0_6px_0_#b45309] active:shadow-none active:translate-y-1.5 border-4 border-slate-900 transition-all playful-font">
+        NEXT QUEST! ➡️
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Web Audio Synthesizer Engine
+    let audioCtx = null;
+    let isMuted = false;
+
+    // Friendly voice prompt reader for non-reading Kindergarten students
+    function speakPrompt() {
+      if ('speechSynthesis' in window) {
+        // Stop any currently playing audio so voices do not overlap
+        window.speechSynthesis.cancel();
+        
+        const chal = challengesList[currentChallengeIndex];
+        const utterance = new SpeechSynthesisUtterance(chal.desc);
+        
+        // Custom adjustments to make the robot voice sound friendly and slow enough for kindergarteners
+        utterance.rate = 0.85;  // Slightly slower speed for better understanding
+        utterance.pitch = 1.2;  // Slightly higher, happier pitch
+        
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    // Play happy arpeggio when a challenge is solved
+    function playSuccessChime() {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const playTone = (freq, start, duration) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.2, start);
+        gain.gain.exponentialRampToValueAtTime(0.01, start + duration - 0.02);
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+
+      playTone(523.25, now, 0.15);       // C5
+      playTone(659.25, now + 0.1, 0.15);  // E5
+      playTone(783.99, now + 0.2, 0.3);   // G5
+    }
+
+    // Play click sound on selecting toys
+    function playClickSound() {
+      if (isMuted) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.1);
+      
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.11);
+    }
+
+    // Scalable Object Path Vectors (duplicatable for true silhouettes)
+    const objectsData = {
+      giraffe: {
+        foreground: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="35" y="80" width="6" height="35" fill="#FFA726" />
+            <rect x="45" y="80" width="6" height="35" fill="#FFA726" />
+            <rect x="55" y="80" width="6" height="35" fill="#FFA726" />
+            <rect x="65" y="80" width="6" height="35" fill="#FFA726" />
+            <ellipse cx="50" cy="75" rx="20" ry="12" fill="#FFA726" />
+            <rect x="33" y="25" width="10" height="50" fill="#FFA726" transform="rotate(-15 33 25)" />
+            <ellipse cx="44" cy="22" rx="10" ry="7" fill="#FFA726" />
+            <line x1="42" y1="16" x2="40" y2="10" stroke="#FFA726" stroke-width="3" stroke-linecap="round" />
+            <line x1="46" y1="16" x2="48" y2="10" stroke="#FFA726" stroke-width="3" stroke-linecap="round" />
+            <circle cx="50" cy="75" r="3" fill="#E65100" />
+            <circle cx="56" cy="72" r="2.5" fill="#E65100" />
+            <circle cx="44" cy="76" r="3" fill="#E65100" />
+            <circle cx="38" cy="45" r="2" fill="#E65100" />
+          </svg>
+        `,
+        shadow: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="35" y="80" width="6" height="35" fill="black" />
+            <rect x="45" y="80" width="6" height="35" fill="black" />
+            <rect x="55" y="80" width="6" height="35" fill="black" />
+            <rect x="65" y="80" width="6" height="35" fill="black" />
+            <ellipse cx="50" cy="75" rx="20" ry="12" fill="black" />
+            <rect x="33" y="25" width="10" height="50" fill="black" transform="rotate(-15 33 25)" />
+            <ellipse cx="44" cy="22" rx="10" ry="7" fill="black" />
+            <line x1="42" y1="16" x2="40" y2="10" stroke="black" stroke-width="3" />
+            <line x1="46" y1="16" x2="48" y2="10" stroke="black" stroke-width="3" />
+          </svg>
+        `
+      },
+      dino: {
+        foreground: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <path d="M15 80 Q30 90 45 75" stroke="#4CAF50" stroke-width="12" stroke-linecap="round" fill="none" />
+            <rect x="42" y="80" width="10" height="35" fill="#388E3C" rx="4" />
+            <rect x="58" y="80" width="10" height="35" fill="#4CAF50" rx="4" />
+            <ellipse cx="52" cy="70" rx="22" ry="18" fill="#4CAF50" />
+            <path d="M62 65 Q75 55 75 35 Q75 25 65 25" stroke="#4CAF50" stroke-width="16" stroke-linecap="round" fill="none" />
+            <path d="M62 25 L80 25 C85 25 85 38 75 38 L62 38" fill="#4CAF50" stroke="#4CAF50" stroke-width="4" />
+            <circle cx="70" cy="28" r="3" fill="white" />
+            <circle cx="70" cy="28" r="1.5" fill="black" />
+            <path d="M64 65 Q70 68 74 65" stroke="#388E3C" stroke-width="5" stroke-linecap="round" fill="none" />
+          </svg>
+        `,
+        shadow: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <path d="M15 80 Q30 90 45 75" stroke="black" stroke-width="12" stroke-linecap="round" fill="none" />
+            <rect x="42" y="80" width="10" height="35" fill="black" rx="4" />
+            <rect x="58" y="80" width="10" height="35" fill="black" rx="4" />
+            <ellipse cx="52" cy="70" rx="22" ry="18" fill="black" />
+            <path d="M62 65 Q75 55 75 35 Q75 25 65 25" stroke="black" stroke-width="16" stroke-linecap="round" fill="none" />
+            <path d="M62 25 L80 25 C85 25 85 38 75 38 L62 38" fill="black" />
+          </svg>
+        `
+      },
+      tree: {
+        foreground: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="45" y="70" width="10" height="40" fill="#8B5A2B" />
+            <path d="M50 10 C30 10 20 30 20 50 C20 65 35 75 50 75 C65 75 80 65 80 50 C80 30 70 10 50 10 Z" fill="#2E7D32" />
+          </svg>
+        `,
+        shadow: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="45" y="70" width="10" height="40" fill="black" />
+            <path d="M50 10 C30 10 20 30 20 50 C20 65 35 75 50 75 C65 75 80 65 80 50 C80 30 70 10 50 10 Z" fill="black" />
+          </svg>
+        `
+      },
+      castle: {
+        foreground: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="25" y="55" width="50" height="55" fill="#FFCC80" stroke="#E65100" stroke-width="3" rx="4" />
+            <polygon points="20,55 50,20 80,55" fill="#E53935" stroke="#B71C1C" stroke-width="3" />
+            <rect x="42" y="80" width="16" height="30" fill="#8D6E63" rx="2" />
+            <circle cx="54" cy="95" r="2" fill="#FFD54F" />
+            <rect x="35" y="62" width="10" height="10" fill="#E0F7FA" stroke="#006064" stroke-width="2" rx="1" />
+            <rect x="55" y="62" width="10" height="10" fill="#E0F7FA" stroke="#006064" stroke-width="2" rx="1" />
+          </svg>
+        `,
+        shadow: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="25" y="55" width="50" height="55" fill="black" rx="4" />
+            <polygon points="20,55 50,20 80,55" fill="black" />
+          </svg>
+        `
+      },
+      kid: {
+        foreground: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="40" y="85" width="6" height="30" fill="#FFCC80" />
+            <rect x="54" y="85" width="6" height="30" fill="#FFCC80" />
+            <ellipse cx="38" cy="113" rx="6" ry="4" fill="#E53935" />
+            <ellipse cx="56" cy="113" rx="6" ry="4" fill="#E53935" />
+            <rect x="36" y="55" width="28" height="32" fill="#0288D1" rx="6" />
+            <circle cx="50" cy="38" r="16" fill="#FFCC80" />
+            <path d="M34 36 C34 22 66 22 66 36 C60 26 40 26 34 36 Z" fill="#4E342E" />
+            <circle cx="45" cy="36" r="2" fill="black" />
+            <circle cx="55" cy="36" r="2" fill="black" />
+            <path d="M46 44 Q50 48 54 44" stroke="black" stroke-width="2" stroke-linecap="round" fill="none" />
+            <rect x="28" y="58" width="6" height="22" fill="#FFCC80" rx="3" transform="rotate(15 28 58)" />
+            <rect x="66" y="58" width="6" height="22" fill="#FFCC80" rx="3" transform="rotate(-15 66 58)" />
+          </svg>
+        `,
+        shadow: `
+          <svg viewBox="0 0 100 120" class="w-full h-full">
+            <rect x="40" y="85" width="6" height="30" fill="black" />
+            <rect x="54" y="85" width="6" height="30" fill="black" />
+            <ellipse cx="38" cy="113" rx="6" ry="4" fill="black" />
+            <ellipse cx="56" cy="113" rx="6" ry="4" fill="black" />
+            <rect x="36" y="55" width="28" height="32" fill="black" rx="6" />
+            <circle cx="50" cy="38" r="16" fill="black" />
+            <rect x="28" y="58" width="6" height="22" fill="black" rx="3" transform="rotate(15 28 58)" />
+            <rect x="66" y="58" width="6" height="22" fill="black" rx="3" transform="rotate(-15 66 58)" />
+          </svg>
+        `
+      }
+    };
+
+    // Game State Variables
+    let gameScore = 0;
+    let selectedType = 'tree';
+    let isDraggingSun = false;
+    let sunPositionPct = 20; // Starts in the morning (far left coordinate)
+    let currentChallengeIndex = 0;
+    let challengeComplete = false;
+
+    // Fun Kindergarten-friendly science tasks
+    const challengesList = [
+      {
+        mascot: "🌻",
+        desc: "Can you move the sun to make a super LONG shadow?",
+        validate: () => {
+          // Shadow is very long when sun is on the far edges
+          return (sunPositionPct < 15 || sunPositionPct > 85);
+        }
+      },
+      {
+        mascot: "🦖",
+        desc: "Switch to the dinosaur 🦖 and make a tiny SHORT shadow directly underneath!",
+        validate: () => {
+          return (selectedType === 'dino' && sunPositionPct > 44 && sunPositionPct < 56);
+        }
+      },
+      {
+        mascot: "🦉",
+        desc: "Make the shadow point to the LEFT (Sun on the right side!)",
+        validate: () => {
+          return (sunPositionPct > 75);
+        }
+      },
+      {
+        mascot: "🦒",
+        desc: "Select the tall Giraffe 🦒 and stretch its shadow far to the RIGHT!",
+        validate: () => {
+          return (selectedType === 'giraffe' && sunPositionPct < 25);
+        }
+      },
+      {
+        mascot: "🏰",
+        desc: "Place the Castle 🏰 on the base and slide the Sun to directly overhead (Noon)!",
+        validate: () => {
+          return (selectedType === 'castle' && sunPositionPct > 46 && sunPositionPct < 54);
+        }
+      }
+    ];
+
+    function startGame() {
+      initAudio();
+      document.getElementById('start-overlay').style.display = 'none';
+      selectObject('tree');
+      updateShadowPhysics();
+      loadChallenge();
+    }
+
+    // Change current toy
+    function selectObject(type) {
+      selectedType = type;
+      playClickSound();
+
+      // Highlight active selector border
+      const list = ['giraffe', 'dino', 'tree', 'castle', 'kid'];
+      list.forEach(item => {
+        const btn = document.getElementById(`btn-${item}`);
+        if (item === type) {
+          btn.classList.add('border-indigo-600', 'bg-indigo-50');
+        } else {
+          btn.classList.remove('border-indigo-600', 'bg-indigo-50');
+        }
+      });
+
+      // Inject chosen template
+      document.getElementById('object-wrapper').innerHTML = objectsData[type].foreground;
+      document.getElementById('shadow-wrapper').innerHTML = objectsData[type].shadow;
+
+      updateShadowPhysics();
+      checkChallengeState();
+    }
+
+    // Calculations for realistic shadow length, skew and color based on Sun X coordinate
+    function updateShadowPhysics() {
+      const xNorm = sunPositionPct / 100; // Normalised 0.0 to 1.0
+
+      // Dynamic Sky background colors based on sun location
+      const body = document.body;
+      const ground = document.getElementById('ground');
+      
+      if (sunPositionPct < 20 || sunPositionPct > 80) {
+        // Sunrise / Sunset (warm sunset shades)
+        body.className = "p-0 m-0 w-screen h-screen flex flex-col justify-between bg-gradient-to-b from-orange-300 via-rose-300 to-sky-200 transition-colors duration-1000";
+        ground.className = "absolute inset-0 bg-gradient-to-b from-emerald-600 to-teal-800 transition-colors duration-1000";
+        document.getElementById('time-display').innerText = sunPositionPct < 50 ? "🌅 Sunrise (Morning)" : "🌇 Sunset (Evening)";
+      } else if (sunPositionPct > 40 && sunPositionPct < 60) {
+        // High noon bright sky
+        body.className = "p-0 m-0 w-screen h-screen flex flex-col justify-between bg-gradient-to-b from-sky-400 to-sky-100 transition-colors duration-1000";
+        ground.className = "absolute inset-0 bg-gradient-to-b from-emerald-400 to-emerald-600 transition-colors duration-1000";
+        document.getElementById('time-display').innerText = "☀️ Noon (Midday)";
+      } else {
+        // Normal afternoon sky
+        body.className = "p-0 m-0 w-screen h-screen flex flex-col justify-between bg-gradient-to-b from-sky-300 via-sky-200 to-white transition-colors duration-1000";
+        ground.className = "absolute inset-0 bg-gradient-to-b from-emerald-400 to-emerald-600 transition-colors duration-1000";
+        document.getElementById('time-display').innerText = sunPositionPct < 50 ? "🌤️ Morning Sun" : "🌤️ Afternoon Sun";
+      }
+
+      // Calculate shadow angle (Skew) and height (Scale)
+      // When Sun is far Left (xNorm = 0.05), shadow skews far Right (skew ~ +70deg).
+      // When Sun is middle (xNorm = 0.5), shadow has no skew (skew = 0) and is very short.
+      const skewDegrees = (0.5 - xNorm) * 140; 
+      
+      // Scale length: Short (0.25) when sun is centered, long (2.5) when low
+      const scaleY = 0.25 + 2.25 * (1.0 - Math.sin(xNorm * Math.PI));
+
+      // Calculate shadow opacity & blur (longer shadows are softer/fuzzier)
+      const opacity = 0.15 + (0.3 * Math.sin(xNorm * Math.PI));
+      const blurAmount = Math.abs(0.5 - xNorm) * 6; // up to 3px blur for distance propagation
+
+      // Inject styles on shadow element
+      const shadowWrapper = document.getElementById('shadow-wrapper');
+      shadowWrapper.style.transform = `scaleY(${scaleY}) skewX(${skewDegrees}deg)`;
+      shadowWrapper.style.opacity = opacity;
+      shadowWrapper.style.filter = `blur(${blurAmount}px)`;
+    }
+
+    // Interactive mouse / touch dragging logic for the sun
+    const arena = document.getElementById('sky-arena');
+    const sun = document.getElementById('sun-element');
+
+    function processDrag(clientX) {
+      const bounds = arena.getBoundingClientRect();
+      let xOffset = clientX - bounds.left;
+      
+      // Clamp values so Sun doesn't fly off screen edges
+      let pct = (xOffset / bounds.width) * 100;
+      pct = Math.max(5, Math.min(95, pct));
+
+      sunPositionPct = pct;
+
+      // Position along a cute arc path
+      const arcY = 80 - 60 * Math.sin((pct / 100) * Math.PI); // Peak altitude is 20% from top
+      
+      sun.style.left = `${pct}%`;
+      sun.style.top = `${arcY}%`;
+
+      // Update manual slider value to match
+      document.getElementById('sun-slider').value = pct;
+
+      updateShadowPhysics();
+      checkChallengeState();
+    }
+
+    // Touch and mouse listeners
+    sun.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isDraggingSun = true;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isDraggingSun) {
+        processDrag(e.clientX);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDraggingSun = false;
+    });
+
+    // Touch Screen support
+    sun.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      isDraggingSun = true;
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDraggingSun && e.touches.length > 0) {
+        processDrag(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => {
+      isDraggingSun = false;
+    });
+
+    // Handle manual slider control
+    document.getElementById('sun-slider').addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      sunPositionPct = val;
+
+      const arcY = 80 - 60 * Math.sin((val / 100) * Math.PI);
+      sun.style.left = `${val}%`;
+      sun.style.top = `${arcY}%`;
+
+      updateShadowPhysics();
+      checkChallengeState();
+    });
+
+    // Dynamic Challenge validation checking
+    function loadChallenge() {
+      challengeComplete = false;
+      const chal = challengesList[currentChallengeIndex];
+
+      document.getElementById('mascot').innerText = chal.mascot;
+      document.getElementById('challenge-desc').innerText = chal.desc;
+
+      const status = document.getElementById('goal-status');
+      status.innerText = "Not Yet! 🔍";
+      status.className = "bg-rose-100 text-rose-600 border-2 border-rose-400 font-extrabold px-4 py-2 rounded-2xl text-sm uppercase tracking-wider animate-pulse";
+
+      // Read prompt automatically after a tiny delay once the slide transitions
+      setTimeout(speakPrompt, 500);
+    }
+
+    function checkChallengeState() {
+      if (challengeComplete) return;
+
+      const chal = challengesList[currentChallengeIndex];
+      if (chal.validate()) {
+        challengeComplete = true;
+        playSuccessChime();
+
+        // Update badge
+        const status = document.getElementById('goal-status');
+        status.innerText = "SOLVED! 🌟";
+        status.className = "bg-emerald-100 text-emerald-600 border-2 border-emerald-400 font-extrabold px-4 py-2 rounded-2xl text-sm uppercase tracking-wider animate-bounce";
+
+        // Open win modal with slight delay
+        setTimeout(() => {
+          showSuccessModal();
+        }, 850);
+      }
+    }
+
+    function showSuccessModal() {
+      const overlay = document.getElementById('success-overlay');
+      const card = document.getElementById('success-card');
+      
+      overlay.classList.remove('opacity-0', 'pointer-events-none');
+      card.classList.remove('scale-95');
+
+      gameScore += 10;
+      document.getElementById('score-val').innerText = gameScore;
+    }
+
+    function nextChallenge() {
+      const overlay = document.getElementById('success-overlay');
+      const card = document.getElementById('success-card');
+      
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      card.classList.add('scale-95');
+
+      // Next level loop
+      currentChallengeIndex = (currentChallengeIndex + 1) % challengesList.length;
+      loadChallenge();
+    }
+  </script>
+</body>
+</html>
